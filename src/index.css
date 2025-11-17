@@ -143,18 +143,18 @@ All colors MUST be HSL.
     background-image: 
       radial-gradient(
         ellipse at top left,
-        rgba(239, 68, 68, 0.08) 0%,
-        transparent 50%
+        rgba(220, 38, 38, 0.28) 0%,
+        transparent 65%
       ),
       radial-gradient(
         ellipse at bottom right,
-        rgba(156, 163, 175, 0.08) 0%,
-        transparent 50%
+        rgba(0, 0, 0, 0.75) 0%,
+        transparent 65%
       ),
       radial-gradient(
         ellipse at center,
-        rgba(75, 85, 99, 0.03) 0%,
-        transparent 70%
+        rgba(185, 28, 28, 0.20) 0%,
+        transparent 75%
       );
     min-height: 100vh;
   }
@@ -164,18 +164,18 @@ All colors MUST be HSL.
     background-image: 
       radial-gradient(
         ellipse at top left,
-        rgba(239, 68, 68, 0.12) 0%,
-        transparent 50%
+        rgba(220, 38, 38, 0.32) 0%,
+        transparent 65%
       ),
       radial-gradient(
         ellipse at bottom right,
-        rgba(156, 163, 175, 0.12) 0%,
-        transparent 50%
+        rgba(0, 0, 0, 0.80) 0%,
+        transparent 65%
       ),
       radial-gradient(
         ellipse at center,
-        rgba(75, 85, 99, 0.05) 0%,
-        transparent 70%
+        rgba(185, 28, 28, 0.22) 0%,
+        transparent 75%
       );
   }
 }
