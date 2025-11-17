@@ -151,8 +151,9 @@ export const Chatbot = () => {
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed bottom-6 right-6 z-[9999] w-[420px] max-w-[calc(100vw-3rem)] pointer-events-auto"
             style={{ position: 'fixed' }}
+            onWheel={(e) => e.stopPropagation()}
           >
-            <Card className="overflow-hidden border-2 border-red-600/30 shadow-2xl backdrop-blur-xl bg-background/95">
+            <Card className="overflow-hidden border-2 border-red-600/30 shadow-2xl backdrop-blur-xl bg-background/95" onWheel={(e) => e.stopPropagation()}>
               {/* Header */}
               <div className="bg-gradient-to-r from-red-600 to-red-800 p-4 text-white">
                 <div className="flex items-center justify-between">
@@ -199,8 +200,12 @@ export const Chatbot = () => {
               {!isMinimized && (
                 <CardContent className="p-0">
                   {/* Messages Area */}
-                  <ScrollArea className="h-[400px] p-4" ref={scrollAreaRef}>
-                    <div className="space-y-4">
+                  <ScrollArea 
+                    className="h-[400px] p-4" 
+                    ref={scrollAreaRef}
+                    onWheel={(e) => e.stopPropagation()}
+                  >
+                    <div className="space-y-4" onWheel={(e) => e.stopPropagation()}>
                       {messages.map((message, index) => (
                         <motion.div
                           key={index}

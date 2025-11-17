@@ -31,19 +31,22 @@ export async function sendMessageToPerplexity(
   messages: Message[]
 ): Promise<ChatResponse> {
   try {
-    // Prepend system prompt if not already included
-    const messagesWithSystem = messages[0]?.role === 'system' 
-      ? messages 
-      : [{ role: 'system' as const, content: SYSTEM_PROMPT }, ...messages];
+    // Filter out the initial assistant greeting and only keep user/assistant conversation
+    const conversationMessages = messages.filter(msg => msg.role !== 'assistant' || messages.indexOf(msg) > 0);
+    
+    // Prepend system prompt
+    const messagesWithSystem = [
+      { role: 'system' as const, content: SYSTEM_PROMPT },
+      ...conversationMessages
+    ];
 
     const response = await axios.post(
       PERPLEXITY_API_URL,
       {
-        model: 'llama-3.1-sonar-large-128k-online',
+        model: 'sonar-pro',
         messages: messagesWithSystem,
         temperature: 0.7,
         max_tokens: 500,
-        stream: false,
       },
       {
         headers: {
@@ -60,6 +63,7 @@ export async function sendMessageToPerplexity(
     };
   } catch (error: any) {
     console.error('Perplexity API Error:', error);
+    console.error('Response data:', error.response?.data);
     
     return {
       message: 'Sorry, I encountered an error processing your request. Please try again.',
