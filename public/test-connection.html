@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .result {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #dc2626;
+        }
+        .success {
+            border-left-color: #22c55e;
+            color: #22c55e;
+        }
+        .error {
+            border-left-color: #ef4444;
+            color: #ef4444;
+        }
+        button {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #b91c1c;
+        }
+        pre {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Backend Connection Test</h1>
+    <p>Testing connection to: <strong>https://backend-b3ru.onrender.com</strong></p>
+
+    <button onclick="testConnection()">🚀 Test Connection</button>
+    <button onclick="testWithCredentials()">🔐 Test With Credentials</button>
+    <button onclick="testWorkers()">👷 Test Workers API</button>
+
+    <div id="result"></div>
+
+    <script>
+        const BACKEND_URL = 'https://backend-b3ru.onrender.com';
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">⏳ Testing connection...</div>';
+            
+            try {
+                console.log('🔍 Fetching:', `${BACKEND_URL}/health`);
+                
+                const response = await fetch(`${BACKEND_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                console.log('📡 Response status:', response.status);
+                console.log('📋 Response headers:', response.headers);
+                
+                const data = await response.json();
+                
+                console.log('✅ Response data:', data);
+                
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <h2>✅ SUCCESS - Backend Connected!</h2>
+                        <p><strong>Status:</strong> ${response.status} OK</p>
+                        <p><strong>Backend Status:</strong> ${data.status}</p>
+                        <p><strong>Timestamp:</strong> ${data.timestamp}</p>
+                        <p><strong>Service:</strong> ${data.service}</p>
+                        <p><strong>Available Endpoints:</strong></p>
+                        <pre>${JSON.stringify(data.endpoints, null, 2)}</pre>
+                        <h3 style="color: #22c55e;">🎉 CORS is working!</h3>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('❌ Error:', error);
+                
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h2>❌ FAILED - Connection Error</h2>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <pre>${error.stack || 'No stack trace available'}</pre>
+                        <h3>Possible Issues:</h3>
+                        <ul>
+                            <li>CORS is blocking the request</li>
+                            <li>Backend is not responding</li>
+                            <li>Network error</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        async function testWithCredentials() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">⏳ Testing with credentials...</div>';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <h2>✅ SUCCESS - Backend Connected With Credentials!</h2>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h2>❌ FAILED - Credentials Mode Error</h2>
+                        <p>${error.message}</p>
+                        <p><strong>This means CORS credentials are not properly configured</strong></p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testWorkers() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">⏳ Testing /api/workers...</div>';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/workers`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <h2>✅ SUCCESS - Workers API Working!</h2>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Workers found:</strong> ${Array.isArray(data) ? data.length : 'N/A'}</p>
+                        <pre>${JSON.stringify(data, null, 2).substring(0, 1000)}...</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h2>❌ FAILED - Workers API Error</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-test on page load
+        window.onload = () => {
+            testConnection();
+        };
+    </script>
+</body>
+</html>

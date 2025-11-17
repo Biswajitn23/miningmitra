@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #dc2626;
+        }
+        button {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #b91c1c;
+        }
+        .success {
+            color: #22c55e;
+            border-left-color: #22c55e;
+        }
+        .error {
+            color: #ef4444;
+            border-left-color: #ef4444;
+        }
+        pre {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .status {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Backend Connection Tester</h1>
+    <p>Backend URL: <strong>https://backend-b3ru.onrender.com</strong></p>
+
+    <div class="test-section">
+        <h2>Test 1: Simple Fetch (No CORS)</h2>
+        <button onclick="testSimpleFetch()">Test Simple Fetch</button>
+        <div id="simple-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Health Endpoint</h2>
+        <button onclick="testHealth()">Test /health</button>
+        <div id="health-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Workers Endpoint</h2>
+        <button onclick="testWorkers()">Test /api/workers</button>
+        <div id="workers-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: With Credentials (CORS)</h2>
+        <button onclick="testCORS()">Test CORS</button>
+        <div id="cors-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Instructions</h2>
+        <ol>
+            <li><strong>If all tests fail:</strong> Backend is down or URL is wrong</li>
+            <li><strong>If Test 1 works but others fail:</strong> CORS not configured</li>
+            <li><strong>If Test 1-3 work but Test 4 fails:</strong> CORS credentials not enabled</li>
+        </ol>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://backend-b3ru.onrender.com';
+
+        async function testSimpleFetch() {
+            const resultDiv = document.getElementById('simple-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`);
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <div class="status success">✅ SUCCESS</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">❌ FAILED</div>
+                    <p>${error.message}</p>
+                    <p><strong>Solution:</strong> Backend is not responding. Check if it's running on Render.com</p>
+                `;
+            }
+        }
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <div class="status success">✅ SUCCESS</div>
+                    <p>Status: ${response.status}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">❌ FAILED</div>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        async function testWorkers() {
+            const resultDiv = document.getElementById('workers-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/workers`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <div class="status success">✅ SUCCESS</div>
+                    <p>Status: ${response.status}</p>
+                    <p>Workers found: ${Array.isArray(data) ? data.length : 'N/A'}</p>
+                    <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">❌ FAILED</div>
+                    <p>${error.message}</p>
+                    <p><strong>Solution:</strong> Endpoint doesn't exist or CORS blocking request</p>
+                `;
+            }
+        }
+
+        async function testCORS() {
+            const resultDiv = document.getElementById('cors-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include', // This requires CORS credentials
+                });
+                const data = await response.json();
+                
+                // Check CORS headers
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Credentials': response.headers.get('Access-Control-Allow-Credentials'),
+                };
+                
+                resultDiv.innerHTML = `
+                    <div class="status success">✅ SUCCESS</div>
+                    <p>Status: ${response.status}</p>
+                    <p><strong>CORS Headers:</strong></p>
+                    <pre>${JSON.stringify(corsHeaders, null, 2)}</pre>
+                    <p><strong>Response:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">❌ FAILED - CORS ISSUE</div>
+                    <p>${error.message}</p>
+                    <p><strong>This is your problem!</strong></p>
+                    <div style="background: #dc2626; padding: 15px; border-radius: 5px; margin-top: 10px;">
+                        <h3>Solution: Add CORS to your backend</h3>
+                        <p>Add this to your Express.js backend:</p>
+                        <pre style="background: #1a1a1a;">
+const cors = require('cors');
+
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://miningmitra.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+app.options('*', cors());
+                        </pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-run first test on load
+        window.onload = () => {
+            testSimpleFetch();
+        };
+    </script>
+</body>
+</html>

@@ -10,7 +10,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Enable CORS credentials
+  withCredentials: false, // Disable credentials temporarily for testing
 });
 
 // Request interceptor for adding auth tokens if needed
@@ -51,11 +51,29 @@ apiClient.interceptors.response.use(
 // Health check endpoint
 export const checkBackendHealth = async () => {
   try {
+    // Call the health endpoint
     const response = await apiClient.get('/health');
     console.log('✅ Backend connected successfully:', response.data);
+    console.log('🌐 Backend URL:', API_BASE_URL);
+    console.log('📊 Available endpoints:', response.data.endpoints);
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Backend connection failed:', error);
+    console.error('🌐 Attempted URL:', API_BASE_URL);
+    
+    // Provide specific error messages
+    if (error.code === 'ERR_NETWORK') {
+      console.error(`
+🚨 NETWORK ERROR - This is likely a CORS issue!
+
+Your backend at ${API_BASE_URL} needs CORS configuration.
+      `);
+    } else if (error.code === 'ECONNABORTED') {
+      console.error('⏱️ REQUEST TIMEOUT - Backend took too long to respond');
+    } else if (error.response?.status === 404) {
+      console.error('⚠️ Endpoint not found - Backend is running but /health endpoint may not exist');
+    }
+    
     return false;
   }
 };

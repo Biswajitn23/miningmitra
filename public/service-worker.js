@@ -21,6 +21,13 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  // Skip caching for API requests to backend
+  if (event.request.url.includes('backend-b3ru.onrender.com') || 
+      event.request.url.includes('/api/')) {
+    // Let API requests go directly to network without service worker interference
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
