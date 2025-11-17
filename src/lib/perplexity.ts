@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const PERPLEXITY_API_KEY = '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';
+const PERPLEXITY_API_KEY = import.meta.env.VITE_PERPLEXITY_API_KEY || '';
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
 export interface Message {
