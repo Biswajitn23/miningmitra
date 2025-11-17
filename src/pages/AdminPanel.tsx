@@ -4,14 +4,18 @@ import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { useCorridors } from '@/context/CorridorContext';
 import { toast } from 'sonner';
-import { Settings, RefreshCw, Database } from 'lucide-react';
+import { Settings, RefreshCw, Database, Wallet } from 'lucide-react';
+import { useWeb3 } from '@/context/Web3Context';
+import { CorridorContract } from '@/lib/contracts';
 
 const AdminPanel = () => {
-  const { updateMetrics, generateNewScore } = useCorridors();
+  const { updateMetrics, generateNewScore, corridors } = useCorridors();
+  const { isConnected, connectWallet, signer, chainId } = useWeb3();
   const [pollution, setPollution] = useState(45);
   const [traffic, setTraffic] = useState(42);
   const [greenCover, setGreenCover] = useState(68);
   const [temperature, setTemperature] = useState(32);
+  const [blockchainLoading, setBlockchainLoading] = useState(false);
 
   const handleUpdateMetrics = () => {
     updateMetrics(pollution, traffic, greenCover, temperature);
@@ -23,10 +27,51 @@ const AdminPanel = () => {
     toast.success('Scores regenerated for all corridors!');
   };
 
-  const handleUpdateBlockchain = () => {
-    toast.success('Blockchain updated!', {
-      description: 'New records added to the distributed ledger',
-    });
+  const handleUpdateBlockchain = async () => {
+    if (!isConnected || !signer || !chainId) {
+      toast.error('Please connect your wallet first');
+      await connectWallet();
+      return;
+    }
+
+    setBlockchainLoading(true);
+
+    try {
+      const contract = new CorridorContract(signer, chainId);
+      
+      // Push all corridor data to blockchain
+      let successCount = 0;
+      for (const corridor of corridors) {
+        try {
+          await contract.addCorridorData(
+            corridor.id,
+            corridor.score,
+            corridor.pollution,
+            corridor.greenCover
+          );
+          successCount++;
+        } catch (error) {
+          console.error(`Failed to update ${corridor.name}:`, error);
+        }
+      }
+
+      toast.success(`Blockchain updated!`, {
+        description: `${successCount} corridors synced to blockchain`,
+      });
+    } catch (error: any) {
+      console.error('Blockchain update error:', error);
+      
+      // Fallback for demo
+      if (error.message?.includes('not deployed')) {
+        toast.warning('Demo mode - contract not deployed', {
+          description: 'Simulating blockchain update',
+        });
+      } else {
+        toast.error('Failed to update blockchain: ' + error.message);
+      }
+    } finally {
+      setBlockchainLoading(false);
+    }
   };
 
   return (
@@ -38,12 +83,20 @@ const AdminPanel = () => {
           </Button>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Settings className="h-8 w-8" />
-          <div>
-            <h1 className="text-4xl font-bold">Admin Control Panel</h1>
-            <p className="text-muted-foreground">Internal controls for live demo</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Settings className="h-8 w-8" />
+            <div>
+              <h1 className="text-4xl font-bold">Admin Control Panel</h1>
+              <p className="text-muted-foreground">Internal controls for live demo</p>
+            </div>
           </div>
+          {!isConnected && (
+            <Button onClick={connectWallet} variant="outline">
+              <Wallet className="h-4 w-4 mr-2" />
+              Connect Wallet
+            </Button>
+          )}
         </div>
 
         <Card className="border-destructive/50">
@@ -152,13 +205,18 @@ const AdminPanel = () => {
             <CardHeader>
               <CardTitle className="text-lg">Update Blockchain</CardTitle>
               <CardDescription>
-                Push current data to the blockchain ledger
+                Push current corridor data to Ethereum blockchain
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleUpdateBlockchain} className="w-full" variant="outline">
+              <Button 
+                onClick={handleUpdateBlockchain} 
+                className="w-full" 
+                variant="outline"
+                disabled={blockchainLoading || !isConnected}
+              >
                 <Database className="h-4 w-4 mr-2" />
-                Update Blockchain
+                {blockchainLoading ? 'Updating...' : 'Update Blockchain'}
               </Button>
             </CardContent>
           </Card>

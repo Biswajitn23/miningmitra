@@ -3,6 +3,7 @@ import CorridorMap from '@/components/CorridorMap';
 import CorridorCard from '@/components/CorridorCard';
 import MetricCard from '@/components/MetricCard';
 import InstallPrompt from '@/components/InstallPrompt';
+import { Chatbot } from '@/components/Chatbot';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Wind, Trees, Thermometer, Truck, ShieldCheck, Zap, Users, Wrench, AlertTriangle } from 'lucide-react';
@@ -323,6 +324,9 @@ const Dashboard = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* AI Chatbot */}
+      <Chatbot />
     </div>
   );
 };

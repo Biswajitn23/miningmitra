@@ -3,8 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Upload, Hash } from 'lucide-react';
+import { CheckCircle, XCircle, Upload, Hash, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
+import { useWeb3 } from '@/context/Web3Context';
+import { CertificateContract, generateCertificateHash } from '@/lib/contracts';
 
 interface VerificationResult {
   valid: boolean;
@@ -15,50 +17,77 @@ interface VerificationResult {
 }
 
 const CertificateVerifier = () => {
+  const { isConnected, connectWallet, signer, chainId } = useWeb3();
   const [hash, setHash] = useState('');
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (!hash) {
       toast.error('Please enter a certificate hash');
       return;
     }
 
+    if (!isConnected || !signer || !chainId) {
+      toast.error('Please connect your wallet first');
+      await connectWallet();
+      return;
+    }
+
     setLoading(true);
     
-    // Simulate blockchain verification
-    setTimeout(() => {
-      const mockResult: VerificationResult = {
-        valid: hash.length > 10,
-        timestamp: new Date().toISOString(),
-        corridorId: 'Nagpur → Nhava Sheva',
-        issuer: 'Ministry of Commerce',
-        lotNumber: '#8912',
+    try {
+      const contract = new CertificateContract(signer, chainId);
+      const verificationResult = await contract.verifyCertificate(hash);
+      
+      const result: VerificationResult = {
+        valid: verificationResult.isValid,
+        timestamp: new Date(Number(verificationResult.timestamp) * 1000).toISOString(),
+        corridorId: verificationResult.data.split('|')[0] || 'Unknown',
+        issuer: verificationResult.issuer,
+        lotNumber: verificationResult.data.split('|')[1] || 'N/A',
       };
       
-      setResult(mockResult);
-      setLoading(false);
+      setResult(result);
       
-      if (mockResult.valid) {
-        toast.success('Certificate verified successfully!');
+      if (result.valid) {
+        toast.success('Certificate verified on blockchain!');
       } else {
-        toast.error('Invalid certificate hash');
+        toast.error('Certificate not found on blockchain');
       }
-    }, 1500);
+    } catch (error: any) {
+      console.error('Verification error:', error);
+      
+      // Fallback to mock data if contract not deployed
+      if (error.message?.includes('not deployed')) {
+        toast.warning('Using demo mode - contract not deployed');
+        const mockResult: VerificationResult = {
+          valid: hash.length > 10,
+          timestamp: new Date().toISOString(),
+          corridorId: 'Nagpur → Nhava Sheva',
+          issuer: '0xDemo...Address',
+          lotNumber: '#DEMO-8912',
+        };
+        setResult(mockResult);
+      } else {
+        toast.error('Verification failed: ' + error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Simulate reading file and extracting hash
-      const reader = new FileReader();
-      reader.onload = () => {
-        const mockHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-        setHash(mockHash);
-        toast.success('Certificate hash extracted');
-      };
-      reader.readAsText(file);
+      try {
+        const fileHash = await generateCertificateHash(file);
+        setHash(fileHash);
+        toast.success('Certificate hash generated from file');
+      } catch (error) {
+        console.error('Error generating hash:', error);
+        toast.error('Failed to generate hash from file');
+      }
     }
   };
 
@@ -80,7 +109,15 @@ const CertificateVerifier = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Certificate Verification</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              Certificate Verification
+              {!isConnected && (
+                <Button onClick={connectWallet} size="sm" variant="outline">
+                  <Wallet className="h-4 w-4 mr-2" />
+                  Connect Wallet
+                </Button>
+              )}
+            </CardTitle>
             <CardDescription>
               Upload a certificate or enter its blockchain hash to verify authenticity
             </CardDescription>

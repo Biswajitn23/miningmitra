@@ -2,6 +2,7 @@ import { useCorridors } from '@/context/CorridorContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Chatbot } from '@/components/Chatbot';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ArrowLeft, TrendingDown, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -225,6 +226,9 @@ const CorridorInsights = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* AI Chatbot */}
+      <Chatbot />
     </div>
   );
 };
