@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CorridorProvider } from "@/context/CorridorContext";
+import { useEffect } from "react";
+import { checkBackendHealth } from "@/lib/api/config";
 import Index from "./pages/Index";
 import CertificateVerifier from "./pages/CertificateVerifier";
 import CorridorInsights from "./pages/CorridorInsights";
@@ -15,28 +17,35 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <CorridorProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/verify" element={<CertificateVerifier />} />
-            <Route path="/insights" element={<CorridorInsights />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/worker-tracking" element={<WorkerTracking />} />
-            <Route path="/machinery-maintenance" element={<MachineryMaintenance />} />
-            <Route path="/incident-heatmap" element={<IncidentHeatmap />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </CorridorProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  useEffect(() => {
+    // Check backend connection on app load
+    checkBackendHealth();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <CorridorProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/verify" element={<CertificateVerifier />} />
+              <Route path="/insights" element={<CorridorInsights />} />
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/worker-tracking" element={<WorkerTracking />} />
+              <Route path="/machinery-maintenance" element={<MachineryMaintenance />} />
+              <Route path="/incident-heatmap" element={<IncidentHeatmap />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </CorridorProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

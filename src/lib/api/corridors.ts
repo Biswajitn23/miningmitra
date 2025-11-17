@@ -1,133 +1,80 @@
-import { supabase, Database } from '@/lib/supabase';
+import { apiClient } from './config';
 
-type Corridor = Database['public']['Tables']['corridors']['Row'];
-type CorridorInsert = Database['public']['Tables']['corridors']['Insert'];
-type CorridorUpdate = Database['public']['Tables']['corridors']['Update'];
+export interface Corridor {
+  id: string;
+  name: string;
+  from_location: string;
+  to_location: string;
+  score: number;
+  risk_level: string;
+  pollution: number;
+  green_cover: number;
+  temperature: number;
+  traffic: number;
+  compliance: number;
+  latitude: number;
+  longitude: number;
+  route_end_lat: number;
+  route_end_lng: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type CorridorInsert = Omit<Corridor, 'id' | 'created_at' | 'updated_at'>;
+export type CorridorUpdate = Partial<CorridorInsert>;
 
 // Get all corridors
-export const getCorridors = async () => {
-  const { data, error } = await supabase
-    .from('corridors')
-    .select('*')
-    .order('score', { ascending: false });
-
-  if (error) throw error;
-  return data as Corridor[];
+export const getCorridors = async (): Promise<Corridor[]> => {
+  const response = await apiClient.get('/api/corridors');
+  return response.data;
 };
 
 // Get corridor by ID
-export const getCorridorById = async (id: string) => {
-  const { data, error } = await supabase
-    .from('corridors')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) throw error;
-  return data as Corridor;
+export const getCorridorById = async (id: string): Promise<Corridor> => {
+  const response = await apiClient.get(`/api/corridors/${id}`);
+  return response.data;
 };
 
 // Get corridors by risk level
-export const getCorridorsByRiskLevel = async (riskLevel: string) => {
-  const { data, error } = await supabase
-    .from('corridors')
-    .select('*')
-    .eq('risk_level', riskLevel)
-    .order('score', { ascending: false });
-
-  if (error) throw error;
-  return data as Corridor[];
+export const getCorridorsByRiskLevel = async (riskLevel: string): Promise<Corridor[]> => {
+  const response = await apiClient.get(`/api/corridors?risk_level=${riskLevel}`);
+  return response.data;
 };
 
 // Add new corridor
-export const addCorridor = async (corridor: CorridorInsert) => {
-  const { data, error } = await supabase
-    .from('corridors')
-    .insert(corridor)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Corridor;
+export const addCorridor = async (corridor: CorridorInsert): Promise<Corridor> => {
+  const response = await apiClient.post('/api/corridors', corridor);
+  return response.data;
 };
 
 // Update corridor
-export const updateCorridor = async (id: string, updates: CorridorUpdate) => {
-  const { data, error } = await supabase
-    .from('corridors')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Corridor;
+export const updateCorridor = async (id: string, updates: CorridorUpdate): Promise<Corridor> => {
+  const response = await apiClient.put(`/api/corridors/${id}`, updates);
+  return response.data;
 };
 
 // Delete corridor
-export const deleteCorridor = async (id: string) => {
-  const { error } = await supabase
-    .from('corridors')
-    .delete()
-    .eq('id', id);
-
-  if (error) throw error;
+export const deleteCorridor = async (id: string): Promise<void> => {
+  await apiClient.delete(`/api/corridors/${id}`);
 };
 
 // Get corridor history
 export const getCorridorHistory = async (corridorId: string, limit = 10) => {
-  const { data, error } = await supabase
-    .from('corridor_history')
-    .select('*')
-    .eq('corridor_id', corridorId)
-    .order('recorded_at', { ascending: false })
-    .limit(limit);
-
-  if (error) throw error;
-  return data;
+  const response = await apiClient.get(`/api/corridors/${corridorId}/history?limit=${limit}`);
+  return response.data;
 };
 
 // Add corridor history record
 export const addCorridorHistory = async (corridorId: string, score: number, pollution: number) => {
-  const { data, error } = await supabase
-    .from('corridor_history')
-    .insert({
-      corridor_id: corridorId,
-      score,
-      pollution,
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  const response = await apiClient.post(`/api/corridors/${corridorId}/history`, {
+    score,
+    pollution,
+  });
+  return response.data;
 };
 
 // Get average metrics across all corridors
 export const getAverageMetrics = async () => {
-  const { data, error } = await supabase
-    .from('corridors')
-    .select('pollution, green_cover, temperature, traffic, compliance');
-
-  if (error) throw error;
-
-  if (!data || data.length === 0) {
-    return {
-      pollution: 0,
-      greenCover: 0,
-      temperature: 0,
-      traffic: 0,
-      compliance: 0,
-    };
-  }
-
-  const avg = {
-    pollution: Math.round(data.reduce((sum, c) => sum + c.pollution, 0) / data.length),
-    greenCover: Math.round(data.reduce((sum, c) => sum + c.green_cover, 0) / data.length),
-    temperature: Math.round(data.reduce((sum, c) => sum + c.temperature, 0) / data.length),
-    traffic: Math.round(data.reduce((sum, c) => sum + c.traffic, 0) / data.length),
-    compliance: Math.round(data.reduce((sum, c) => sum + c.compliance, 0) / data.length),
-  };
-
-  return avg;
+  const response = await apiClient.get('/api/corridors/metrics/average');
+  return response.data;
 };

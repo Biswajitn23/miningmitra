@@ -1,142 +1,84 @@
-import { supabase, Database } from '@/lib/supabase';
+import { apiClient } from './config';
 
-type Incident = Database['public']['Tables']['incidents']['Row'];
-type IncidentInsert = Database['public']['Tables']['incidents']['Insert'];
-type IncidentUpdate = Database['public']['Tables']['incidents']['Update'];
+export interface Incident {
+  id: string;
+  type: string;
+  severity: string;
+  zone: string;
+  latitude: number;
+  longitude: number;
+  title: string;
+  description: string;
+  status: string;
+  affected_workers: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type IncidentInsert = Omit<Incident, 'id' | 'created_at' | 'updated_at'>;
+export type IncidentUpdate = Partial<IncidentInsert>;
 
 // Get all incidents
-export const getIncidents = async () => {
-  const { data, error } = await supabase
-    .from('incidents')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data as Incident[];
+export const getIncidents = async (): Promise<Incident[]> => {
+  const response = await apiClient.get('/api/incidents');
+  return response.data;
 };
 
 // Get incident by ID
-export const getIncidentById = async (id: string) => {
-  const { data, error } = await supabase
-    .from('incidents')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) throw error;
-  return data as Incident;
+export const getIncidentById = async (id: string): Promise<Incident> => {
+  const response = await apiClient.get(`/api/incidents/${id}`);
+  return response.data;
 };
 
 // Get incidents by status
-export const getIncidentsByStatus = async (status: string) => {
-  const { data, error } = await supabase
-    .from('incidents')
-    .select('*')
-    .eq('status', status)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data as Incident[];
+export const getIncidentsByStatus = async (status: string): Promise<Incident[]> => {
+  const response = await apiClient.get(`/api/incidents?status=${status}`);
+  return response.data;
 };
 
 // Get incidents by severity
-export const getIncidentsBySeverity = async (severity: string) => {
-  const { data, error } = await supabase
-    .from('incidents')
-    .select('*')
-    .eq('severity', severity)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data as Incident[];
+export const getIncidentsBySeverity = async (severity: string): Promise<Incident[]> => {
+  const response = await apiClient.get(`/api/incidents?severity=${severity}`);
+  return response.data;
 };
 
 // Get incidents by zone
-export const getIncidentsByZone = async (zone: string) => {
-  const { data, error } = await supabase
-    .from('incidents')
-    .select('*')
-    .eq('zone', zone)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data as Incident[];
+export const getIncidentsByZone = async (zone: string): Promise<Incident[]> => {
+  const response = await apiClient.get(`/api/incidents?zone=${zone}`);
+  return response.data;
 };
 
 // Get active incidents
-export const getActiveIncidents = async () => {
-  const { data, error } = await supabase
-    .from('incidents')
-    .select('*')
-    .in('status', ['active', 'investigating'])
-    .order('severity', { ascending: false })
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data as Incident[];
+export const getActiveIncidents = async (): Promise<Incident[]> => {
+  const response = await apiClient.get('/api/incidents/active');
+  return response.data;
 };
 
 // Get critical incidents
-export const getCriticalIncidents = async () => {
-  const { data, error } = await supabase
-    .from('incidents')
-    .select('*')
-    .eq('severity', 'critical')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data as Incident[];
+export const getCriticalIncidents = async (): Promise<Incident[]> => {
+  const response = await apiClient.get('/api/incidents/critical');
+  return response.data;
 };
 
 // Add new incident
-export const addIncident = async (incident: IncidentInsert) => {
-  const { data, error } = await supabase
-    .from('incidents')
-    .insert(incident)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Incident;
+export const addIncident = async (incident: IncidentInsert): Promise<Incident> => {
+  const response = await apiClient.post('/api/incidents', incident);
+  return response.data;
 };
 
 // Update incident
-export const updateIncident = async (id: string, updates: IncidentUpdate) => {
-  const { data, error } = await supabase
-    .from('incidents')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Incident;
+export const updateIncident = async (id: string, updates: IncidentUpdate): Promise<Incident> => {
+  const response = await apiClient.put(`/api/incidents/${id}`, updates);
+  return response.data;
 };
 
 // Delete incident
-export const deleteIncident = async (id: string) => {
-  const { error } = await supabase
-    .from('incidents')
-    .delete()
-    .eq('id', id);
-
-  if (error) throw error;
+export const deleteIncident = async (id: string): Promise<void> => {
+  await apiClient.delete(`/api/incidents/${id}`);
 };
 
 // Get incidents count by zone (for heatmap)
-export const getIncidentsCountByZone = async () => {
-  const { data, error } = await supabase
-    .from('incidents')
-    .select('zone')
-    .order('zone');
-
-  if (error) throw error;
-
-  // Count incidents per zone
-  const zoneCounts: Record<string, number> = {};
-  data?.forEach((incident) => {
-    zoneCounts[incident.zone] = (zoneCounts[incident.zone] || 0) + 1;
-  });
-
-  return zoneCounts;
+export const getIncidentsCountByZone = async (): Promise<Record<string, number>> => {
+  const response = await apiClient.get('/api/incidents/heatmap');
+  return response.data;
 };
