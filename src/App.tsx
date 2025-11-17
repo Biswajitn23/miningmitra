@@ -8,6 +8,9 @@ import Index from "./pages/Index";
 import CertificateVerifier from "./pages/CertificateVerifier";
 import CorridorInsights from "./pages/CorridorInsights";
 import AdminPanel from "./pages/AdminPanel";
+import WorkerTracking from "./pages/WorkerTracking";
+import MachineryMaintenance from "./pages/MachineryMaintenance";
+import IncidentHeatmap from "./pages/IncidentHeatmap";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +27,9 @@ const App = () => (
             <Route path="/verify" element={<CertificateVerifier />} />
             <Route path="/insights" element={<CorridorInsights />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/worker-tracking" element={<WorkerTracking />} />
+            <Route path="/machinery-maintenance" element={<MachineryMaintenance />} />
+            <Route path="/incident-heatmap" element={<IncidentHeatmap />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -5,13 +5,29 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    host: "localhost",
     port: 8080,
+    strictPort: true,
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+      port: 8080,
+    },
   },
   plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    manifest: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
     },
   },
 }));

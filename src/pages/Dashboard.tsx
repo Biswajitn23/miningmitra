@@ -2,12 +2,14 @@ import { useCorridors } from '@/context/CorridorContext';
 import CorridorMap from '@/components/CorridorMap';
 import CorridorCard from '@/components/CorridorCard';
 import MetricCard from '@/components/MetricCard';
+import InstallPrompt from '@/components/InstallPrompt';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Wind, Trees, Thermometer, Truck, ShieldCheck, Zap } from 'lucide-react';
+import { Wind, Trees, Thermometer, Truck, ShieldCheck, Zap, Users, Wrench, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSmoothScroll } from '@/hooks/useSmoothScroll';
 import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
 
 const Dashboard = () => {
   const { corridors, simulateSpike, selectCorridor } = useCorridors();
@@ -46,6 +48,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen p-6 md:p-8 lg:p-10 relative">
+      <InstallPrompt />
       <div className="max-w-7xl mx-auto space-y-8 relative z-10">
         {/* Header */}
         <motion.div 
@@ -230,6 +233,94 @@ const Dashboard = () => {
               </motion.div>
             ))}
           </motion.div>
+        </motion.div>
+
+        {/* New Features Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-gray-400 to-red-400 bg-clip-text text-transparent">
+            Advanced Monitoring Features
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            {/* Worker Tracking Card */}
+            <Card 
+              className="cursor-pointer bg-card/50 backdrop-blur-xl border-border/50 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300"
+              onClick={() => navigate('/worker-tracking')}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-xl bg-blue-500/20">
+                    <Users className="h-8 w-8 text-blue-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold">Worker Health & Tracking</h3>
+                    <p className="text-sm text-muted-foreground">Real-time monitoring</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Monitor worker vitals, location, and safety status with GPS tracking and health sensors.
+                </p>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-green-500 font-semibold">5 Active Workers</span>
+                  <span className="text-red-500 font-semibold">1 Alert</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Machinery Maintenance Card */}
+            <Card 
+              className="cursor-pointer bg-card/50 backdrop-blur-xl border-border/50 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/20 transition-all duration-300"
+              onClick={() => navigate('/machinery-maintenance')}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-xl bg-orange-500/20">
+                    <Wrench className="h-8 w-8 text-orange-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold">Predictive Maintenance</h3>
+                    <p className="text-sm text-muted-foreground">AI-powered insights</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Predict equipment failures before they occur with machine learning and sensor analytics.
+                </p>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-green-500 font-semibold">2 Optimal</span>
+                  <span className="text-red-500 font-semibold">1 Critical</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Incident Heatmap Card */}
+            <Card 
+              className="cursor-pointer bg-card/50 backdrop-blur-xl border-border/50 hover:border-red-500/50 hover:shadow-2xl hover:shadow-red-500/20 transition-all duration-300"
+              onClick={() => navigate('/incident-heatmap')}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-xl bg-red-500/20">
+                    <AlertTriangle className="h-8 w-8 text-red-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold">Incident Heatmap</h3>
+                    <p className="text-sm text-muted-foreground">Safety analytics</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Visualize incident patterns and hotspots with interactive heatmaps and real-time alerts.
+                </p>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-yellow-500 font-semibold">2 Active</span>
+                  <span className="text-green-500 font-semibold">4 Resolved</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </motion.div>
       </div>
     </div>
