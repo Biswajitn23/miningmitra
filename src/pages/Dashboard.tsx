@@ -49,46 +49,47 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto space-y-8 relative z-10">
         {/* Header */}
         <motion.div 
-          className="flex items-center justify-between bg-card/50 backdrop-blur-xl rounded-2xl p-6 border border-border/50 shadow-2xl"
+          className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0 bg-card/50 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-border/50 shadow-2xl"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-200 via-red-400 to-gray-400 bg-clip-text text-transparent drop-shadow-2xl pb-2">Mining Operations Dashboard</h1>
-            <p className="text-muted-foreground mt-2 text-base md:text-lg">
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-200 via-red-400 to-gray-400 bg-clip-text text-transparent drop-shadow-2xl pb-2">Mining Operations Dashboard</h1>
+            <p className="text-muted-foreground mt-2 text-sm md:text-base lg:text-lg">
               Real-time mining site monitoring and extraction zone insights
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
             <Button 
               variant="outline" 
               onClick={() => navigate('/verify')}
-              className="border-gray-500/30 hover:border-gray-400 hover:bg-gray-500/10 hover:shadow-[0_0_20px_rgba(156,163,175,0.3)] transition-all duration-300"
+              className="flex-1 md:flex-none text-xs md:text-sm border-gray-500/30 hover:border-gray-400 hover:bg-gray-500/10 hover:shadow-[0_0_20px_rgba(156,163,175,0.3)] transition-all duration-300"
             >
-              Verify Mining License
+              Verify License
             </Button>
             <Button 
               variant="outline" 
               onClick={() => navigate('/admin')}
-              className="border-red-500/30 hover:border-red-400 hover:bg-red-500/10 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all duration-300"
+              className="flex-1 md:flex-none text-xs md:text-sm border-red-500/30 hover:border-red-400 hover:bg-red-500/10 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all duration-300"
             >
               Control Center
             </Button>
             <Button
               size="lg"
-              className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white shadow-[0_0_30px_rgba(239,68,68,0.4)] hover:shadow-[0_0_40px_rgba(239,68,68,0.6)] transition-all duration-300 gap-2"
+              className="w-full md:w-auto text-xs md:text-sm bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white shadow-[0_0_30px_rgba(239,68,68,0.4)] hover:shadow-[0_0_40px_rgba(239,68,68,0.6)] transition-all duration-300 gap-2"
               onClick={handleSimulateSpike}
             >
-              <Zap className="h-5 w-5" />
-              Simulate Safety Alert
+              <Zap className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="hidden sm:inline">Simulate Safety Alert</span>
+              <span className="sm:hidden">Alert</span>
             </Button>
           </div>
         </motion.div>
 
         {/* Real-time Metrics */}
         <motion.div 
-          className="grid grid-cols-5 gap-4"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
@@ -176,7 +177,7 @@ const Dashboard = () => {
 
         {/* Map and Corridors */}
         <motion.div 
-          className="grid grid-cols-3 gap-6"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
@@ -193,20 +194,20 @@ const Dashboard = () => {
         >
           {/* Map */}
           <motion.div 
-            className="col-span-2"
+            className="lg:col-span-2 order-2 lg:order-1"
             variants={{
               hidden: { opacity: 0, x: -40 },
               visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } }
             }}
           >
-            <div className="h-[600px] rounded-2xl overflow-hidden border border-border/50 shadow-2xl bg-card/30 backdrop-blur-sm">
+            <div className="h-[400px] md:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden border border-border/50 shadow-2xl bg-card/30 backdrop-blur-sm">
               <CorridorMap />
             </div>
           </motion.div>
 
           {/* Mining Site Cards */}
           <motion.div 
-            className="space-y-4"
+            className="space-y-3 md:space-y-4 order-1 lg:order-2"
             variants={{
               hidden: { opacity: 0, x: 40 },
               visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } }
